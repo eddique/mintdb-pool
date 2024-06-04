@@ -1,0 +1,14 @@
+{
+    "files.associations": {
+        "*.h": "c",
+        "*.c": "c",
+        "string": "c",
+        "string_view": "c"
+    },
+    "C_Cpp.default.includePath": ["${workspaceFolder}/**"],
+    "C_Cpp.default.intelliSenseMode": "gcc-x64",
+    "C_Cpp.default.compilerPath": "/usr/bin/gcc",
+    "C_Cpp.loggingLevel": "Debug",
+    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+    "lldb.consoleMode": "commands"
+}
