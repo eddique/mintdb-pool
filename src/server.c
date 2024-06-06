@@ -3,10 +3,13 @@
 #include <stdlib.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+// #include <arpa/inet.h>
+#include <netinet/tcp.h>
 #include <pthread.h>
 #include <string.h>
 #include <netdb.h>
 #include <stdbool.h>
+#include <pool.h>
 #include "server.h"
 #include "handler.h"
 typedef struct
@@ -238,7 +241,6 @@ int proxy_request(int client_socket, Request *request, char *data, char **respon
         return 1;
     }
     close(target_socket);
-    printf("returning response to client\n");
     if (send_bytes(client_socket, *response) != 0)
     {
         printf("error sending client bytes\n");
@@ -265,7 +267,7 @@ void cleanup(int socket, Request *request, char *data, char *response)
         free(response);
     }
 }
-void *handle_client(void *arg)
+void handle_client(void *arg)
 {
     int client_socket = *(int *)arg;
     free(arg);
@@ -278,7 +280,7 @@ void *handle_client(void *arg)
         char message[] = "mintdb pool - Internal Error";
         send_internal_error(client_socket, message);
         cleanup(client_socket, request, data, response);
-        return NULL;
+        return;
     }
     if (read_request(client_socket, request, &data) != 0)
     {
@@ -286,21 +288,29 @@ void *handle_client(void *arg)
         char message[] = "mintdb pool - Error reading request";
         send_internal_error(client_socket, message);
         cleanup(client_socket, request, data, response);
-        return NULL;
+        return;
     }
     printf("@\x1b[38;5;50m%s \x1b[0m%s\n", request->method, request->path);
     proxy_request(client_socket, request, data, &response);
     cleanup(client_socket, request, data, response);
-    return NULL;
+    printf("closing connection\n");
+    return;
 }
 int server(int port)
 {
+    pthread_t threads[THREAD_POOL_SIZE];
+    for (int i = 0; i < THREAD_POOL_SIZE; i++)
+    {
+        pthread_create(&threads[i], NULL, thread_function, NULL);
+    }
     int server_socket = socket(AF_INET, SOCK_STREAM, 0);
     if (server_socket == -1)
     {
         perror("error initializing socket");
         return 1;
     }
+    int srv_flag = 1;
+    setsockopt(server_socket, IPPROTO_TCP, TCP_NODELAY, &srv_flag, sizeof(int));
     struct sockaddr_in server_addr = {
         .sin_family = AF_INET,
         .sin_port = htons(port),
@@ -322,23 +332,18 @@ int server(int port)
     {
         struct sockaddr_in client_addr;
         socklen_t client_addr_len = sizeof(client_addr);
+        printf("waiting for connection\n");
         int client_socket = accept(server_socket, (struct sockaddr *)&client_addr, &client_addr_len);
         if (client_socket == -1)
         {
             perror("failed to accept connection");
             exit(EXIT_FAILURE);
         }
+        int flag = 1;
+        setsockopt(client_socket, IPPROTO_TCP, TCP_NODELAY, &flag, sizeof(int));
         int *client_socket_ptr = (int *)malloc(sizeof(int));
         *client_socket_ptr = client_socket;
-        pthread_t thread;
-        if (pthread_create(&thread, NULL, handle_client, client_socket_ptr) != 0)
-        {
-            perror("pthread_create");
-            close(client_socket);
-            free(client_socket_ptr);
-            continue;
-        }
-        pthread_detach(thread);
+        add_task_to_pool(handle_client, client_socket_ptr);
     }
     close(server_socket);
     return 0;
