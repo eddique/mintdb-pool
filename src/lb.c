@@ -25,35 +25,34 @@ int is_mutation(char *path, char *stmt)
     {
         if (stmt != NULL)
         {
+            if (strncmp(stmt, "insert", strlen("insert")) == 0)
+            {
+                return 0;
+            }
+            if (strncmp(stmt, "drop", strlen("drop")) == 0)
+            {
+                return 0;
+            }
+            if (strncmp(stmt, "delete", strlen("delete")) == 0)
+            {
+                return 0;
+            }
+            if (strncmp(stmt, "migrate", strlen("migrate")) == 0)
+            {
+                return 0;
+            }
 
-            if (strncmp(stmt, "insert", strlen("insert")))
+            if (strncmp(stmt, "batch", strlen("batch")) == 0)
             {
-                return 1;
-            }
-            if (strncmp(stmt, "drop", strlen("drop")))
-            {
-                return 1;
-            }
-            if (strncmp(stmt, "delete", strlen("delete")))
-            {
-                return 1;
-            }
-            if (strncmp(stmt, "migrate", strlen("migrate")))
-            {
-                return 1;
-            }
-
-            if (strncmp(stmt, "batch", strlen("batch")))
-            {
-                return 1;
+                return 0;
             }
         }
     }
-    return 0;
+    return 1;
 }
 int lb_get_host(char *path, char *stmt)
 {
-    if (is_mutation(path, stmt) == 1)
+    if (is_mutation(path, stmt) == 0)
     {
         return 0;
     }

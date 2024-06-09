@@ -5,7 +5,7 @@
             "type": "lldb",
             "request": "launch",
             "name": "Launch Program",
-            "program": "${workspaceFolder}/bin/mint",
+            "program": "${workspaceFolder}/bin/mintdb-pool",
             "args": [],
             "cwd": "${workspaceFolder}"
         }

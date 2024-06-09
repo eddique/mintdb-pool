@@ -4,6 +4,7 @@ typedef struct {
     int replicas;
     char target_host_prefix[MAX_CHAR];
     int target_port;
+    int port;
 } Config;
 Config *config;
 void init_config();

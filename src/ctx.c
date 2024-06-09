@@ -31,6 +31,16 @@ int ctx_init()
     ctx->pool = pool;
     return 0;
 }
+int ctx_port()
+{
+    int port = config->port;
+    return port;
+}
+int ctx_target_port()
+{
+    int port = config->target_port;
+    return port;
+}
 void ctx_add_task(void (*function)(void *), void *data)
 {
     add_task_to_pool(function, data);

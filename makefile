@@ -6,7 +6,7 @@ OBJ_DIR = obj
 BIN_DIR = bin
 SOURCES = $(wildcard $(SRC_DIR)/*.c)
 OBJECTS = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SOURCES))
-EXECUTABLE = $(BIN_DIR)/mint
+EXECUTABLE = $(BIN_DIR)/mintdb-pool
 
 all: dirs $(EXECUTABLE)
 

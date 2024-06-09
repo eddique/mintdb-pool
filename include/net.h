@@ -3,6 +3,8 @@
 
 #define MAX_CHARACTERS 32
 #define MAX_BUFFER_SIZE 8192
+#define MAX_CLIENTS 128
+
 extern const char *HTTP_OK;
 extern const char *HTTP_NO_CONTENT;
 extern const char *HTTP_NOT_FOUND;
@@ -20,6 +22,7 @@ typedef struct
 int send_bytes(int socket, char *response);
 int send_internal_error(int socket, char *error);
 int read_bytes(int socket, char **data);
-int extract_target(Request *request, char *data);
-int parse_body(Request *req, char *data);
+int read_request(int client_socket, Request *request);
+int net_init_server(int port);
+int net_connect(char *host_name, int port);
 #endif

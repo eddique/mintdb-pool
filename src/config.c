@@ -1,6 +1,7 @@
 #include "config.h"
 #include <stdlib.h>
 #include <string.h>
+
 Config *config = NULL;
 
 // void load_dotenv()
@@ -30,9 +31,10 @@ Config *config = NULL;
 void init_config()
 {
     config = (Config *)malloc(sizeof(Config));
-    char *target_host = getenv("HOST_PREFIX");
+    char *target_host = getenv("TARGET_HOST_PREFIX");
     char *target_port_str = getenv("TARGET_PORT");
-    char *replicas_str = getenv("TARGET_PORT");
+    char *replicas_str = getenv("REPLICAS");
+    char *port_str = getenv("REPLICAS");
     if (target_host != NULL)
     {
         strncpy(config->target_host_prefix, target_host, MAX_CHAR - 1);
@@ -49,6 +51,14 @@ void init_config()
     else
     {
         config->target_port = 3000;
+    }
+    if (port_str != NULL)
+    {
+        config->target_port = atoi(port_str);
+    }
+    else
+    {
+        config->port = 4321;
     }
     if (replicas_str != NULL)
     {
