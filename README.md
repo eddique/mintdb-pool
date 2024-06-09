@@ -2,24 +2,31 @@
     <img width="400" src="./docs/img/logo-light.png#gh-light-mode-only" alt="mintDB Logo">
     <img width="400" src="./docs/img/logo.png#gh-dark-mode-only" alt="mintDB Logo">
 </p>
-<h2 align="center">An Open Source Vector Database</h2>
+<h2 align="center">A Load Balancer for mintdb stack</h2>
 <p align="center">
-    <img src="https://img.shields.io/badge/version-0.1.0-10d99d">
-    <img src="https://img.shields.io/docker/pulls/eddique/mintdb-stack">
-    <img src="https://img.shields.io/badge/built_with-Rust-dca282.svg">
-    <img src="https://img.shields.io/badge/license-MIT-critical">
-    <a href="https://www.linkedin.com/in/eric-rodriguez-3a402811b/"><img src="https://img.shields.io/badge/linkedIn-connect-4777AF"></a>
+    <img src="https://img.shields.io/badge/version-0.1.0-000000">
+    <img src="https://img.shields.io/docker/pulls/eddique/mintdb-stack?color=1DA1F2">
+    <img src="https://img.shields.io/badge/built%20with-C-00427A.svg">
+    <img src="https://img.shields.io/badge/license-MIT-750014">
 </p>
 
-# Quick Start
+## Quick Start
 
 ```sh
 make
-./bin/mint -p 8080 -r 3 -n mintdb
+./bin/mintdb-pool -p 4321 -r 3 -n mintdb
 ```
 
-# Usage
+## Usage
 
 ```sh
 mint -p PORT_NUMBER -r MINTDB_REPLICA_NUMBER -n MINTDB_SERVICE_NAME_PREFIX
+```
+
+## Environment
+```sh
+TARGET_HOST_PREFIX=TARGET_HOST_PREFIX
+TARGET_PORT=TARGET_SERVER_PORT
+REPLICAS=NUM_REPLICAS
+PORT=SERVER_PORT
 ```

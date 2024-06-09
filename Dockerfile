@@ -14,12 +14,12 @@ RUN mkdir -p bin obj
 
 RUN make
 
-RUN chmod +x /app/bin/mint
+RUN chmod +x /app/bin/mintdb-pool
 
 FROM scratch
 
-COPY --from=build /app/bin/mint /mint
+COPY --from=build /app/bin/mintdb-pool /mintdb-pool
 
-EXPOSE 8080
+EXPOSE 4321
 
-ENTRYPOINT [ "./mint" ]
+ENTRYPOINT [ "./mintdb-pool" ]

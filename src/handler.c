@@ -1,51 +1,59 @@
 #include "handler.h"
+#include <netinet/in.h>
+#include <netinet/tcp.h>
+#include <pthread.h>
+#include <string.h>
+#include <netdb.h>
 
-const char *HTTP_OK =
-    "HTTP/1.1 200 OK\r\n"
-    "Content-Type: %s\r\n"
-    "Content-Length: %lu\r\n"
-    "\r\n"
-    "%s";
-const char *HTTP_NOT_FOUND =
-    "HTTP/1.1 404 Not Found\r\n"
-    "Content-Type: %s\r\n"
-    "Content-Length: %lu\r\n"
-    "\r\n"
-    "%s";
-const char *HTTP_NO_CONTENT =
-    "HTTP/1.1 204 No Content\r\n"
-    "Content-Length: 0\r\n"
-    "\r\n";
-const char *HTTP_INTERNAL_ERROR =
-    "HTTP/1.1 500 INTERNAL ERROR\r\n"
-    "Content-Type: %s\r\n"
-    "Content-Length: %lu\r\n"
-    "\r\n"
-    "%s";
-
-ssize_t r_size(const char *http, char *content_type, char *data)
+#include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
+int health_handler(Request *req, char **res)
 {
-    ssize_t size = strlen(http);
-    if (content_type != NULL)
-    {
-        size += strlen(content_type);
-    }
-    if (data != NULL)
-    {
-        size += strlen(data);
-    }
-    size += 50;
-    return size;
+    char message[] = "{\"ok\":true,\"message\":\"mintdb pool - all good!\"}";
+    char content_type[] = "application/json; charset=utf-8";
+    write_response(res, HTTP_OK, content_type, message);
+    return 0;
 }
-void write_response(char **res, const char * http_header, char *content_type, char *body)
+int proxy_handler(Request *req, char **res)
 {
-    if (strcmp(http_header, HTTP_NO_CONTENT) == 0) {
-        ssize_t response_size = strlen(http_header) + 1;
-        *res = (char *)malloc(response_size * sizeof(char));
-        snprintf(*res, response_size, "%s", http_header);
-        return;
+    char *tmp_host = ctx_lb_host(req->path, req->stmt);
+    printf("proxy to host \x1b[38;5;50m%s\x1b[0m\n", tmp_host);
+    free(tmp_host);
+    int target_socket = net_connect("localhost", ctx_target_port());
+    if (target_socket < 0)
+    {
+        perror("proxy connect");
+        char message[] = "mintdb pool - Error connecting to target";
+        char content_type[] = "text/plain; charset=utf-8";
+        write_response(res, HTTP_INTERNAL_ERROR, content_type, message);
+        shutdown(target_socket, SHUT_WR);
+        close(target_socket);
+        return 1;
     }
-    ssize_t response_size = r_size(http_header, content_type, body);
-    *res = (char *)malloc(response_size * sizeof(char));
-    snprintf(*res, response_size - 1, http_header, content_type, strlen(body), body);
+    if (send_bytes(target_socket, req->data) != 0)
+    {
+        printf("error reading target bytes\n");
+        char message[] = "mintdb pool - Error sending data to target";
+        char content_type[] = "text/plain; charset=utf-8";
+        write_response(res, HTTP_INTERNAL_ERROR, content_type, message);
+        shutdown(target_socket, SHUT_WR);
+        close(target_socket);
+        return 1;
+    }
+
+    if (read_bytes(target_socket, res) != 0)
+    {
+        printf("error reading target bytes\n");
+        char message[] = "mintdb pool - Error reading target response";
+        char content_type[] = "text/plain; charset=utf-8";
+        write_response(res, HTTP_INTERNAL_ERROR, content_type, message);
+        shutdown(target_socket, SHUT_WR);
+        close(target_socket);
+        return 1;
+    }
+    shutdown(target_socket, SHUT_WR);
+    close(target_socket);
+
+    return 0;
 }

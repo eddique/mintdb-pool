@@ -2,13 +2,21 @@
 #include <stdio.h>
 #include <string.h>
 
-int router(Request *request, char *data)
+int match_path(char *path, char *request_path)
 {
-    printf("in router\n");
-    printf("method %s\n", request->method);
-    printf("path %s\n", request->method);
-    printf("stmt %s\n", request->stmt);
-    printf("data %lu\n", strlen(data));
-    printf("received @%s -> %s action %s request_length %lu\n", request->method, request->path, request->stmt, strlen(data));
+    ssize_t path_len = strlen(path);
+    return strncmp(request_path, path, path_len);
+}
+
+int router(Request *req, char **res)
+{
+    if (match_path("/mintdb-pool/health", req->path) == 0)
+    {
+        health_handler(req, res);
+    }
+    else
+    {
+        proxy_handler(req, res);
+    }
     return 0;
 }
